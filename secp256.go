@@ -90,12 +90,17 @@ func GenerateKeyPair() ([]byte, []byte) {
 }
 
 //returns nil on error
-func PubkeyFromSeckey(SecKey []byte) ([]byte) {
+func PubkeyFromSeckey(SecKey []byte, compressed bool) ([]byte) {
 	if len(SecKey) != 32 {
 		log.Panic("PubkeyFromSeckey: invalid length")
-	}
+	}        
 
-	pubkey_len := C.int(33)
+	pubkey_len := C.int(65)
+        compressflag := C.int(0)
+        if (compressed){
+            pubkey_len = C.int(33)
+            compressflag = C.int(1)
+        }
 	const seckey_len = 32
 
 	var pubkey []byte = make([]byte, pubkey_len)
@@ -107,7 +112,7 @@ func PubkeyFromSeckey(SecKey []byte) ([]byte) {
 
 	ret := C.secp256k1_ecdsa_pubkey_create(
 		pubkey_ptr, &pubkey_len,
-		seckey_ptr, 1)
+		seckey_ptr, compressflag)
 
 	if ret != 1 {
 		return nil
